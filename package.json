@@ -1,0 +1,16 @@
+{
+  "name": "node-express-ssl",
+  "version": "0.0.0",
+  "description": "Simple mock server with SSL and self signed certificate",
+  "main": "index.js",
+  "repository": "https://github.com/abjolseth/node-express-ssl.git",
+  "author": "abjolseth <abjolseth@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "express": "^4.16.2"
+  },
+  "scripts": {
+    "amock": "node scripts/mock_api_server.js"
+  }
+}
