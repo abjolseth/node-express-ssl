@@ -1,12 +1,17 @@
 var express = require('express');
+var cors = require('cors');
 var process = require('process');
 var http = require('http');
 var https = require('https');
 var fs = require('fs');
 
-var server = express();
+var app = express();
+console.log('cors', cors());
+//app.use(cors); // Use cors for all origins
 
-http.createServer(server).listen(8000);
+http.createServer(app).listen(8000, function () {
+  console.log('CORS-enabled web server listening on port 8000');
+});
 
 var cwd = process.cwd();
 var scripts = cwd + '/scripts';
@@ -19,12 +24,43 @@ var sslOptions = {
   cert: fs.readFileSync(scripts+'/cert.pem'),
   passphrase: 'melosys'
 };
-https.createServer(sslOptions, server).listen(8443);
+https.createServer(sslOptions, app).listen(8443);
 
 var router = express.Router();
 
-router.get('/', function (req, res) {
-  hello = 'Hello World';
+var whitelist = ['localhost'];
+var corsOptions = {
+  origin: function (origin, callback) {
+    console.log('origin:', origin);
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  methods: ['GET','POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 3600,
+  preflightContinue: true
+};
+
+var issue2options = {
+  origin: 'localhost', //true== CORS, // Bool | String | RegExp | Array
+  methods: ['GET','POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 3600,
+  preflightContinue: true
+};
+var defaultCorsConfig = {
+  "origin": "*",
+  "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+  "preflightContinue": false,
+  "optionsSuccessStatus": 204
+};
+router.get('/', cors(corsOptions), function (req, res) {
+  hello = {'Hello': 'World'};
   return res.json(hello);
 });
-server.use('/api', router);
+app.use('/api', router);
