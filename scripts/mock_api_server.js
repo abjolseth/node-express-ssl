@@ -1,4 +1,5 @@
 var express = require('express');
+const _ = require('underscore');
 var cors = require('cors');
 var process = require('process');
 var http = require('http');
@@ -9,7 +10,7 @@ var app = express();
 console.log('cors', cors());
 //app.use(cors); // Use cors for all origins
 
-http.createServer(app).listen(8000, function () {
+http.createServer(app).listen(3002, function () {
   console.log('CORS-enabled web server listening on port 8000');
 });
 
@@ -59,8 +60,31 @@ var defaultCorsConfig = {
   "preflightContinue": false,
   "optionsSuccessStatus": 204
 };
-router.get('/', cors(corsOptions), function (req, res) {
+
+
+//, cors(corsOptions)
+router.get('/', function (req, res) {
   hello = {'Hello': 'World'};
   return res.json(hello);
 });
+
+const corsOpts = {
+  origin: 'http://127.0.0.1:3000',
+  methods: ['GET','POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 3600,
+  preflightContinue: true
+};
+router.get('/saksbehandler', cors(corsOptions), function (req, res) {
+  try {
+    const saksbehandlere =  JSON.parse(fs.readFileSync("./scripts/mock_data/saksbehandler.json", "utf8"));
+    // return a random sakbehandler from list of sakbehandlere
+    return res.json(_.sample(saksbehandlere));
+  } catch (err) {
+    console.log(err)
+  }
+});
+
+
 app.use('/api', router);
